@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import app from './src/app';
-import config from  './src/config';
-
+import config from  './src/config/index';
+import { setupSwagger } from "../server/src/swagger";
+import express from 'express';
 
 dotenv.config();
 
+setupSwagger(app as express.Express);
 
 (async ()=> {
     try {
