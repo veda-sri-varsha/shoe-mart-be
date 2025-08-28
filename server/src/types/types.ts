@@ -1,34 +1,34 @@
 import { Document, Types } from "mongoose";
 import AuthRoles from "../constants/authRoles";
 
-export interface IUser extends Document {
+export type IUser = Document & {
   name: string;
   email: string;
   password: string;
   role: (typeof AuthRoles)[keyof typeof AuthRoles];
+  isVerified: boolean;
+  verifyOtp?: string;
+  verifyOtpExpireAt?: Date;
+  resetOtp?: string;
+  resetOtpExpireAt?: Date;
   refreshToken?: string;
   forgotPasswordToken?: string;
   forgotPasswordExpire?: Date;
-  verifyToken?: string | undefined;
-  verifyTokenExpire?: Date | undefined;
-  isVerified: {
-    type: Boolean;
-    default: false;
-  };
 
   generateAccessToken(): string;
   generateRefreshToken(): string;
   generateForgotPasswordToken(): string;
-}
+  generateEmailVerification(): string;
+};
 
-export interface IOrderProduct {
+export type IOrderProduct = {
   productId: Types.ObjectId;
   count: number;
   price: number;
   quantity: number;
-}
+};
 
-export interface IProduct extends Document {
+export type IProduct = Document & {
   name: string;
   price: number;
   description?: string;
@@ -39,12 +39,12 @@ export interface IProduct extends Document {
   sold: number;
   collectionId: Types.ObjectId;
   isDeleted: {
-    type: Boolean;
+    type: boolean;
     default: false;
   };
-}
+};
 
-export interface ICollection extends Document {
+export type ICollection = Document & {
   name: string;
   images: { url: string }[];
   isActive: boolean;
@@ -52,9 +52,9 @@ export interface ICollection extends Document {
   products: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
-export interface IOrder extends Document {
+export type IOrder = Document & {
   products: IOrderProduct[];
   user: Types.ObjectId;
   address: string;
@@ -72,13 +72,13 @@ export interface IOrder extends Document {
   cancelled: number;
   productId: string;
   quantity: number;
-}
+};
 
-export interface ICoupon extends Document {
+export type ICoupon = Document & {
   code: string;
   discount: number;
   active: boolean;
   expiry: Date;
   createdAt: Date;
   updatedAt: Date;
-}
+};
