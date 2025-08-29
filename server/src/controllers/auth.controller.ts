@@ -224,6 +224,39 @@ export const resetPassword = handler(async (req: Request, res: Response) => {
   res.json({ success: true, message: "Password reset successfully" });
 });
 
+export const updatePassword = handler(async (req: Request, res: Response) => {
+  const { email, oldPassword, newPassword, confirmPassword } = req.body;
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "All fields (oldPassword, newPassword, confirmPassword) are required" 
+    });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "New password and confirm password do not match" 
+    });
+  }
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+  if (!isOldPasswordValid) {
+    return res.status(400).json({ success: false, message: "Old password is incorrect" });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+
+  res.status(200).json({ success: true, message: "Password updated successfully" });
+});
+
 export const getProfile = handler(async (req: Request, res: Response) => {
   const { userId } = req.body as { userId: string };
 
