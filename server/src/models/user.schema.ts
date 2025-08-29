@@ -38,11 +38,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
-    forgotPasswordToken: String,
-    forgotPasswordExpire: Date,
-    verifyToken: String,
-    verifyTokenExpire: Date,
-    isVerified: { type: Boolean, default: false },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifyOtp: {
+      type: String,
+    },
+    verifyOtpExpireAt: {
+      type: Date,
+    },
+    resetOtp: {
+      type: String,
+    },
+    resetOtpExpireAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
@@ -57,13 +68,6 @@ userSchema.methods.generateRefreshToken = function (): string {
   return jwt.sign({ id: this._id }, config.JWT_REFRESH_SECRET, {
     expiresIn: config.JWT_REFRESH_EXPIRATION || "7d",
   });
-};
-
-userSchema.methods.generateEmailVerificationToken = function (): string {
-  const token = Math.floor(100000 + Math.random() * 900000).toString();
-  this.verifyToken = token;
-  this.verifyTokenExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-  return token;
 };
 
 const User = mongoose.model<IUser>("User", userSchema);
