@@ -6,12 +6,12 @@ import { productSchema } from "../schema/product.zod";
 import handler from "../services/handler";
 
 export const addProduct = handler(async (req: Request, res: Response) => {
-  const { name, price, description, category, stock, collectionId } =
-    req.body;
+  const { name, price, brand, description, category, stock, collectionId } = req.body;
 
   const product = await Product.create({
     name,
     price,
+    brand,
     description,
     category,
     stock,
@@ -28,6 +28,7 @@ export const addProduct = handler(async (req: Request, res: Response) => {
     product: {
       id: product._id,
       name: product.name,
+      brand: product.brand,
       price: product.price,
       description: product.description,
       category: product.category,
@@ -52,15 +53,28 @@ export const addProduct = handler(async (req: Request, res: Response) => {
 //   }
 // };
 
-export const getAllProducts = handler(async (_req: Request, res: Response) => {
-  const products = await Product.find().populate("collectionId");
-  res
-    .status(200)
-    .json({
-      success: true,
-      message: "All Products fetched successfully",
-      products,
-    });
+export const getAllProducts = handler(async (req: Request, res: Response) => {
+  const { page = 1, limit = 10 } = req.query;
+
+  const productAggregate = Product.aggregate([
+    { $match: { isDeleted: false } },
+    { $sort: { createdAt: -1 } },
+  ]);
+
+  const products = await (Product as any).aggregatePaginate(productAggregate, {
+    page: Number(page),
+    limit: Number(limit),
+    customLabels: {
+      totalDocs: "totalProducts",
+      docs: "products",
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Products fetched successfully",
+    ...products,
+  });
 });
 
 export const getProductById = async (
@@ -128,26 +142,39 @@ export const productByCollectionId = async (
   req: Request<{ collectionId: string }>,
   res: Response
 ) => {
-  try {
-    const { collectionId } = req.params;
+  const { collectionId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(collectionId)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Collection ID" });
-    }
-
-    const products = await Product.find({ collectionId }).populate(
-      "collectionId"
-    );
-    res.status(200).json({
-      success: true,
-      message: "Products fetched successfully by Collection ID",
-      products,
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
+  if (!mongoose.Types.ObjectId.isValid(collectionId)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid Collection ID" });
   }
+
+  const productAggregate = Product.aggregate([
+    {
+      $match: {
+        collectionId: new mongoose.Types.ObjectId(collectionId),
+        isDeleted: false,
+      },
+    },
+    { $sort: { createdAt: -1 } },
+  ]);
+
+  const products = await (Product as any).aggregatePaginate(productAggregate, {
+    page: Number(page),
+    limit: Number(limit),
+    customLabels: {
+      totalDocs: "totalProducts",
+      docs: "products",
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Products fetched successfully by Collection ID",
+    ...products,
+  });
 };
 
 export const deleteProduct = async (
