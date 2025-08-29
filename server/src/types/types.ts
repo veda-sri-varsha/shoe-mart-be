@@ -31,6 +31,7 @@ export type IOrderProduct = {
 export type IProduct = Document & {
   name: string;
   price: number;
+  brand: string;
   description?: string;
   ratings: number;
   images: { url: string }[];
