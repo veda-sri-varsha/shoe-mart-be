@@ -1,25 +1,31 @@
 import dotenv from "dotenv";
+import { envSchema } from "../schema/env.schema";
 
 dotenv.config();
 
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  console.error("Invalid environment variables:", parsedEnv.error.issues);
+  process.exit(1);
+}
+
 const config = {
- PORT: process.env.PORT,
-  DATABASE_URL: process.env.DATABASE_URL as string,
-  JWT_SECRET: process.env.JWT_ACCESS_SECRET as string,
-  JWT_EXPIRATION: Number(process.env.JWT_ACCESS_EXPIRATION),
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
-  JWT_REFRESH_EXPIRATION: Number(process.env.JWT_REFRESH_EXPIRATION),
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
-  RAZORPAY_KEY: process.env.RAZORPAY_KEY_ID as string,
-  RAZORPAY_SECRET: process.env.RAZORPAY_KEY_SECRET as string,
-  JWT_VERIFY_SECRET: process.env.JWT_VERIFY_SECRET as string,
-
-  SMTP_HOST: process.env.SMTP_HOST as string,
-  SMTP_PORT: process.env.SMTP_PORT as string,
-  SMTP_USERNAME: process.env.SMTP_USERNAME as string,
-  SMTP_PASSWORD: process.env.SMTP_PASSWORD as string,
-  SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL as string,
-
+  PORT: parsedEnv.data.PORT,
+  DATABASE_URL: parsedEnv.data.DATABASE_URL,
+  JWT_SECRET: parsedEnv.data.JWT_ACCESS_SECRET,
+  JWT_EXPIRATION: parsedEnv.data.JWT_ACCESS_EXPIRATION,
+  JWT_REFRESH_SECRET: parsedEnv.data.JWT_REFRESH_SECRET,
+  JWT_REFRESH_EXPIRATION: parsedEnv.data.JWT_REFRESH_EXPIRATION,
+  JWT_VERIFY_SECRET: parsedEnv.data.JWT_VERIFY_SECRET,
+  CLOUDINARY_CLOUD_NAME: parsedEnv.data.CLOUDINARY_CLOUD_NAME,
+  RAZORPAY_KEY: parsedEnv.data.RAZORPAY_KEY_ID,
+  RAZORPAY_SECRET: parsedEnv.data.RAZORPAY_KEY_SECRET,
+  SMTP_HOST: parsedEnv.data.SMTP_HOST,
+  SMTP_PORT: parsedEnv.data.SMTP_PORT,
+  SMTP_USERNAME: parsedEnv.data.SMTP_USERNAME,
+  SMTP_PASSWORD: parsedEnv.data.SMTP_PASSWORD,
+  SMTP_FROM_EMAIL: parsedEnv.data.SMTP_FROM_EMAIL,
 };
 
 export default config;
