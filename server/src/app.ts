@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
-import router from "./routes/index";
+import router from "./routes";
+import swaggerUi from 'swagger-ui-express';
+import swaggerfile from '../src/swagger-output.json';
 
 const app = express();
 
@@ -20,5 +22,8 @@ app.get("/healthcheck", (_req: Request, res: Response) => {
 });
 
 app.use("/api", router);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerfile));
+
 
 export default app;
