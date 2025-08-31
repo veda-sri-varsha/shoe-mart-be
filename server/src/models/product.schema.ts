@@ -1,8 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import { IProduct } from "../types/types";
+import { Product } from "../types/index";
 import aggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const productSchema = new Schema<IProduct>(
+const productSchema = new Schema<Product>(
   {
     name: {
       type: String,
@@ -62,8 +62,8 @@ const productSchema = new Schema<IProduct>(
 productSchema.plugin(aggregatePaginate);
 
 const Product = mongoose.model<
-  IProduct,
-  mongoose.AggregatePaginateModel<IProduct>
+  Product,
+  mongoose.AggregatePaginateModel<Product>
 >("Product", productSchema);
 
 export default Product;

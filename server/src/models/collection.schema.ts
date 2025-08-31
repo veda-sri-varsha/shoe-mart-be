@@ -1,7 +1,7 @@
 import mongoose, { Schema, Model } from "mongoose";
-import { ICollection } from "../types/types";
+import { Collection } from "../types/index";
 
-const collectionSchema: Schema<ICollection> = new mongoose.Schema(
+const collectionSchema: Schema<Collection> = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -40,7 +40,7 @@ collectionSchema.pre("save", function (next) {
   next();
 });
 
-const Collection: Model<ICollection> = mongoose.model<ICollection>(
+const Collection: Model<Collection> = mongoose.model<Collection>(
   "Collection",
   collectionSchema
 );

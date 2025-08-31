@@ -1,7 +1,7 @@
 import mongoose, { Schema, Types, Model } from "mongoose";
-import { IOrder, IOrderProduct } from "../types/types";
+import { Order, OrderProduct } from "../types/index";
 
-const orderProductSchema = new Schema<IOrderProduct>(
+const orderProductSchema = new Schema<OrderProduct>(
   {
     productId: {
       type: Schema.Types.ObjectId,
@@ -21,7 +21,7 @@ const orderProductSchema = new Schema<IOrderProduct>(
   { _id: false }
 );
 
-const orderSchema: Schema<IOrder> = new Schema(
+const orderSchema: Schema<Order> = new Schema(
   {
     products: {
       type: [orderProductSchema],
@@ -61,6 +61,6 @@ const orderSchema: Schema<IOrder> = new Schema(
   { timestamps: true }
 );
 
-const Order: Model<IOrder> = mongoose.model<IOrder>("Order", orderSchema);
+const Order: Model<Order> = mongoose.model<Order>("Order", orderSchema);
 
 export default Order;

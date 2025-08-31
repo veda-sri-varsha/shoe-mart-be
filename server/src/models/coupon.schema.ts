@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
-import { ICoupon } from "../types/types";
+import { Coupon } from "../types/index";
 
-const couponSchema: Schema<ICoupon> = new Schema(
+const couponSchema: Schema<Coupon> = new Schema(
   {
     code: {
       type: String,
@@ -24,5 +24,5 @@ const couponSchema: Schema<ICoupon> = new Schema(
   { timestamps: true }
 );
 
-const Coupon: Model<ICoupon> = mongoose.model<ICoupon>("Coupon", couponSchema);
+const Coupon: Model<Coupon> = mongoose.model<Coupon>("Coupon", couponSchema);
 export default Coupon;

@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.methods.generateAccessToken = function (): string {
+userSchema.methods.generateAccessToken = function () {
   return jwt.sign({ id: this._id }, config.JWT_SECRET, {
     expiresIn: config.JWT_EXPIRATION || "25m",
   });
