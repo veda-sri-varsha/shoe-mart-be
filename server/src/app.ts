@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import router from "./routes";
 
-
 const app = express();
 
 app.use(express.json());
@@ -21,7 +20,5 @@ app.get("/healthcheck", (_req: Request, res: Response) => {
 });
 
 app.use("/api", router);
-
-
 
 export default app;
