@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 import { Coupon } from "../types/index";
 
 const couponSchema: Schema<Coupon> = new Schema(

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types, Model } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 import { Order, OrderProduct } from "../types/index";
 
 const orderProductSchema = new Schema<OrderProduct>(

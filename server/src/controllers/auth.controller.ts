@@ -1,27 +1,31 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import User from "../models/user.schema";
 import AuthRoles from "../constants/authRoles";
 import { signupSchema, loginSchema } from "../schema/auth.zod";
 import mailHelper from "../utils/mailHelper";
 import handler from "../services/handler";
-import { email } from "zod";
+import CustomError from "../services/customError";
+import { generateOtp } from "../utils/otpHelper";
+
+export const cookieOptions = {
+  expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+  httpOnly: true,
+};
 
 export const signup = handler(async (req: Request, res: Response) => {
   const validate = signupSchema.safeParse(req.body);
-  if (!validate.success) {
-    return res.status(400).json({ errors: validate.error.issues });
-  }
+   if (!validate.success) throw new CustomError("Invalid input", 400, validate.error.issues);
 
   const { name, email, password, role } = validate.data;
 
   const existingUser = await User.findOne({ email: email.toLowerCase() });
-  if (existingUser) {
-    return res.status(400).json({ message: "User already exists" });
-  }
+    if (existingUser) throw new CustomError("User already exists", 400);
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+   const hashedPassword = await bcrypt.hash(password, 10);
+  const { otp, expireAt } = generateOtp(10);
 
   const newUser = await User.create({
     name,
@@ -37,35 +41,33 @@ export const signup = handler(async (req: Request, res: Response) => {
     message: `Hello ${newUser.name},\n\nYour OTP for email verification is: ${otp}\n\nThis OTP will expire in 10 minutes.`,
   });
 
-  return res.status(201).json({
-    message:
-      "User registered successfully. Please check your email for the OTP.",
+   res.status(201).json({
+    success: true,
+    statusCode: 201,
+    message: "User registered successfully. Check your email for OTP.",
+    user: newUser,
   });
 });
 
 export const verifyEmail = handler(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({ message: "Email and OTP are required" });
-  }
+   if (!email || !otp) throw new CustomError("Email and OTP are required", 400);
 
   const user = await User.findOne({ email: email.toLowerCase() });
-  if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) throw new CustomError("User not found", 404);
 
   if (user.isVerified)
-    return res.status(200).json({ message: "Email already verified" });
+    throw new CustomError("Email already verified", 400);
 
   if (!user.verifyOtp || !user.verifyOtpExpireAt) {
-    return res
-      .status(400)
-      .json({ message: "No OTP found. Please request a new one." });
+    throw new CustomError("No OTP found. Please request a new one.", 400);
   }
 
   if (new Date() > user.verifyOtpExpireAt) {
-    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  const { otp: newOtp, expireAt } = generateOtp(10);
     user.verifyOtp = newOtp;
-    user.verifyOtpExpireAt = new Date(Date.now() + 10 * 60 * 1000);
+    user.verifyOtpExpireAt = expireAt;
     await user.save();
 
     await mailHelper({
@@ -76,43 +78,37 @@ export const verifyEmail = handler(async (req: Request, res: Response) => {
 
     return res
       .status(400)
-      .json({ message: "OTP expired. New OTP sent to your email." });
+      .json({ success:true, statusCode:400 ,message: "OTP expired. New OTP sent to your email." });
   }
 
-  if (user.verifyOtp !== otp) {
-    return res.status(400).json({ message: "Invalid OTP" });
-  }
+   if (user.verifyOtp !== otp) throw new CustomError("Invalid OTP", 400);
 
   user.isVerified = true;
   user.verifyOtp = undefined;
   user.verifyOtpExpireAt = undefined;
   await user.save();
 
-  return res.status(200).json({ message: "Email verified successfully" });
+  return res.status(200).json({ success: true, statusCode: 200, message: "Email verified successfully" });
 });
 
 export const login = handler(async (req: Request, res: Response) => {
   const validate = loginSchema.safeParse(req.body);
-  if (!validate.success) {
-    return res.status(400).json({ errors: validate.error.issues });
-  }
+   if (!validate.success) throw new CustomError("Invalid input", 400, validate.error.issues);
+
 
   const { email, password } = validate.data;
 
   const user = await User.findOne({ email: email.toLowerCase() }).select(
     "+password"
   );
-  if (!user) return res.status(400).json({ message: "Invalid credentials" });
+  if (!user) throw new CustomError("Invalid credentials", 400);
 
   if (!user.isVerified) {
-    return res
-      .status(403)
-      .json({ message: "Please verify your email before logging in" });
+    throw new CustomError("Please verify your email before logging in", 403);
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid)
-    return res.status(400).json({ message: "Invalid credentials" });
+  if (!isPasswordValid) throw new CustomError("Invalid credentials", 400);
 
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
@@ -122,13 +118,10 @@ export const login = handler(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 25 * 60 * 1000,
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -148,10 +141,10 @@ export const login = handler(async (req: Request, res: Response) => {
 
 export const logout = handler(async (req: Request, res: Response) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email is required" });
+  if (!email) throw new CustomError("Email is required", 400);
 
   const user = await User.findOne({ email });
-  if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) throw new CustomError("User not found", 404);
 
   user.refreshToken = undefined;
   await user.save({ validateBeforeSave: false });
@@ -164,15 +157,14 @@ export const logout = handler(async (req: Request, res: Response) => {
 
 export const forgotPassword = handler(async (req: Request, res: Response) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email is required" });
+  if (!email) throw new CustomError("Email is required", 400);
 
   const user = await User.findOne({ email: email.toLowerCase() });
-  if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) throw new CustomError("User not found", 404);
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
+  const { otp, expireAt } = generateOtp(10);
   user.resetOtp = otp;
-  user.resetOtpExpireAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  user.resetOtpExpireAt = expireAt;
   await user.save({ validateBeforeSave: false });
 
   await mailHelper({
@@ -181,17 +173,14 @@ export const forgotPassword = handler(async (req: Request, res: Response) => {
     message: `Hello ${user.name},\n\nYour OTP for password reset is: ${otp}\nThis OTP will expire in 10 minutes.`,
   });
 
-  res.status(200).json({ message: "Password reset OTP sent to your email." });
+  res.status(200).json({ success: true, statusCode: 200, message: "Password reset OTP sent to your email." });
 });
 
 export const resetPassword = handler(async (req: Request, res: Response) => {
   const { email, otp, newPassword } = req.body;
 
   if (!email || !otp || !newPassword) {
-    return res.status(400).json({
-      success: false,
-      message: "Enter valid email, OTP and newPassword",
-    });
+    throw new CustomError("Enter valid email, OTP and newPassword", 400);
   }
 
   const user = await User.findOne({ email: email.toLowerCase() });
@@ -268,6 +257,7 @@ export const getProfile = handler(async (req: Request, res: Response) => {
   }
 
   res.json({
+    status: 200,
     success: true,
     userData: {
       name: user.name,
@@ -282,11 +272,19 @@ export const getAllUsers = handler(async (req: Request, res: Response) => {
   const users = await User.find();
 
   if (!users || users.length === 0) {
-    return res.status(404).json({ success: false, message: "No users found" });
+    return res.status(404).json({ 
+      status: 404,
+      message: "No users found",
+      data: null
+    });
   }
 
   res.status(200).json({
-    success: true,
-    users: users,
+    status: 200,
+    message: "Users retrieved successfully",
+    data: {
+      users: users,
+      count: users.length
+    }
   });
 });
