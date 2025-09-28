@@ -11,7 +11,7 @@ if (!parsedEnv.success) {
 }
 
 const config = {
-  PORT: parsedEnv.data.PORT,
+  PORT: Number(parsedEnv.data.PORT),
   DATABASE_URL: parsedEnv.data.DATABASE_URL,
   JWT_SECRET: parsedEnv.data.JWT_ACCESS_SECRET,
   JWT_EXPIRATION: parsedEnv.data.JWT_ACCESS_EXPIRATION,
