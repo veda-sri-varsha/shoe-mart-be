@@ -19,4 +19,6 @@ export type User = Document & {
   generateRefreshToken(): string;
   generateForgotPasswordToken(): string;
   generateEmailVerification(): string;
+  comparePassword(enteredPassword: string): Promise<boolean>;
+
 };
