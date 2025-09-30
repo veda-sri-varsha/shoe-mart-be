@@ -25,6 +25,7 @@ const config = {
   SMTP_USERNAME: parsedEnv.data.SMTP_USERNAME,
   SMTP_PASSWORD: parsedEnv.data.SMTP_PASSWORD,
   SMTP_FROM_EMAIL: parsedEnv.data.SMTP_FROM_EMAIL,
+  CLIENT_URL: parsedEnv.data.CLIENT_URL,
 };
 
 export default config;
