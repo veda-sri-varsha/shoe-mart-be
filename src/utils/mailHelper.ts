@@ -9,13 +9,20 @@ interface MailOptions {
 
 const mailHelper = async (options: MailOptions): Promise<void> => {
   const message = {
-    from: `${config.SMTP_FROM_EMAIL} <${config.SMTP_USERNAME}>`,
+    from: config.SMTP_FROM_EMAIL, 
     to: options.email,
     subject: options.subject,
     text: options.message,
+    html: `<p>${options.message}</p>`,
   };
 
-  await transporter.sendMail(message);
+  try {
+    const info = await transporter.sendMail(message);
+    console.log("Email sent successfully");
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    throw error;
+  }
 };
 
 export default mailHelper;
