@@ -16,7 +16,7 @@ export const cookieOptions = {
 };
 
 const generateOtp = (expiryMinutes: number = 10) => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expireAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
   return { otp, expireAt };
 };
@@ -90,8 +90,8 @@ export const verifyEmail = handler(async (req: Request, res: Response) => {
       message: `Hello ${user.name},\n\nYour new OTP for email verification is: ${newOtp}\n\nThis OTP will expire in 10 minutes.`,
     });
 
-    return res.status(400).json({ 
-      success: false, 
+    return res.status(400).json({
+      success: false,
       statusCode: 400,
       message: "OTP expired. New OTP sent to your email.",
     });
@@ -104,9 +104,9 @@ export const verifyEmail = handler(async (req: Request, res: Response) => {
   user.verifyOtpExpireAt = undefined;
   await user.save();
 
-  return res.status(200).json({ 
-    success: true, 
-    statusCode: 200, 
+  return res.status(200).json({
+    success: true,
+    statusCode: 200,
     message: "Email verified successfully",
     data: {
       user: {
@@ -133,7 +133,7 @@ export const login = handler(async (req: Request, res: Response) => {
     throw new CustomError("Please verify your email before logging in", 403);
   }
 
-const isPasswordValid = await user.comparePassword(password);
+  const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) throw new CustomError("Invalid credentials", 400);
 
   const accessToken = user.generateAccessToken();
@@ -154,7 +154,7 @@ const isPasswordValid = await user.comparePassword(password);
 
   return res.status(200).json({
     success: true,
-    statusCode: 200,  
+    statusCode: 200,
     message: "Login successful",
     data: {
       user: {
@@ -216,7 +216,7 @@ export const logout = handler(async (req: Request, res: Response) => {
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
 
-  return res.status(200).json({ 
+  return res.status(200).json({
     success: true,
     statusCode: 200,
     message: "Logout successful",
@@ -242,9 +242,9 @@ export const forgotPassword = handler(async (req: Request, res: Response) => {
     message: `Hello ${user.name},\n\nYour OTP for password reset is: ${otp}\nThis OTP will expire in 10 minutes.`,
   });
 
-  res.status(200).json({ 
-    success: true, 
-    statusCode: 200, 
+  res.status(200).json({
+    success: true,
+    statusCode: 200,
     message: "Password reset OTP sent to your email.",
   });
 });
@@ -276,8 +276,8 @@ export const resetPassword = handler(async (req: Request, res: Response) => {
   user.resetOtpExpireAt = undefined;
   await user.save();
 
-  res.status(200).json({ 
-    success: true, 
+  res.status(200).json({
+    success: true,
     statusCode: 200,
     message: "Password reset successfully",
   });
@@ -305,8 +305,8 @@ export const updatePassword = handler(async (req: Request, res: Response) => {
   user.password = newPassword;
   await user.save();
 
-  res.status(200).json({ 
-    success: true, 
+  res.status(200).json({
+    success: true,
     statusCode: 200,
     message: "Password updated successfully",
   });
@@ -338,7 +338,7 @@ export const getAllUsers = handler(async (req: Request, res: Response) => {
   const users = await User.find();
 
   if (!users || users.length === 0) {
-    return res.status(200).json({ 
+    return res.status(200).json({
       success: true,
       statusCode: 200,
       message: "No users found",
