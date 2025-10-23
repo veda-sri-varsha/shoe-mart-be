@@ -59,6 +59,7 @@ export const signup = handler(async (req: Request, res: Response) => {
         email: newUser.email,
         role: newUser.role,
         isVerified: newUser.isVerified,
+        refreshToken: newUser.refreshToken
       }
     }
   });
@@ -115,6 +116,7 @@ export const verifyEmail = handler(async (req: Request, res: Response) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
+        refreshToken: user.refreshToken
       }
     }
   });
