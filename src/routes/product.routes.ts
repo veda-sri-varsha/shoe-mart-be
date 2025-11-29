@@ -27,19 +27,19 @@ router.patch(
 );
 router.get(
   "/",
-  UserAuth,
+  // UserAuth,
   getAllProducts
 );
 router.get(
   "/:id",
-  UserAuth,
-  authorize(AuthRoles.ADMIN, AuthRoles.VENDOR),
+  // UserAuth,
+  // authorize(AuthRoles.ADMIN, AuthRoles.VENDOR),
   getProductById
 );
 router.get(
   "/collection/:id",
-  UserAuth,
-  authorize(AuthRoles.ADMIN, AuthRoles.VENDOR),
+  // UserAuth,
+  // authorize(AuthRoles.ADMIN, AuthRoles.VENDOR),
   productByCollectionId
 );
 
