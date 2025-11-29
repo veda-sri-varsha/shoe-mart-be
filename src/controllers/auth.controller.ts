@@ -37,7 +37,7 @@ export const signup = handler(async (req: Request, res: Response) => {
     email: email.toLowerCase(),
     password,
     role: role || AuthRoles.USER,
-    isVerified: false,
+    isVerified: true,
     verifyOtp: otp,
     verifyOtpExpireAt: expireAt,
   });
