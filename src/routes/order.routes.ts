@@ -6,7 +6,8 @@ import {
   getOrderAdmin,
   updateOrderStatus,
   deleteOrder,
-} from "../controllers/orders.controller";
+  verifyPayment,
+} from "../controllers/order.controller";
 import UserAuth, { authorize } from "../middlewares/UserAuth";
 import AuthRoles from "../constants/authRoles";
 
@@ -17,6 +18,13 @@ router.post(
   UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
   generateOrder
+);
+
+router.post(
+  "/verify-payment",
+  UserAuth,
+  authorize(AuthRoles.ADMIN, AuthRoles.USER),
+  verifyPayment
 );
 
 router.put("/:id", UserAuth, authorize(AuthRoles.ADMIN), updateOrderStatus);
