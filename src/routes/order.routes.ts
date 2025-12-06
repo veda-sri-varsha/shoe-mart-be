@@ -27,20 +27,11 @@ router.post(
   verifyPayment
 );
 
-router.put("/:id", UserAuth, authorize(AuthRoles.ADMIN), updateOrderStatus);
-
-router.put(
-  "/user/:id",
+router.post(
+  "/razorpay",
   UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
-  updateOrderStatus
-);
-
-router.patch(
-  "/:id",
-  UserAuth,
-  authorize(AuthRoles.ADMIN, AuthRoles.USER),
-  deleteOrder
+  generateRazorPayOrderId
 );
 
 router.get(
@@ -50,13 +41,32 @@ router.get(
   getOrders
 );
 
-router.get("/:id", UserAuth, authorize(AuthRoles.ADMIN), getOrderAdmin);
+router.get(
+  "/admin",
+  UserAuth,
+  authorize(AuthRoles.ADMIN),
+  getOrderAdmin
+);
 
-router.post(
-  "/razorpay",
+router.put(
+  "/user/:id",
   UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
-  generateRazorPayOrderId
+  updateOrderStatus
+);
+
+router.put(
+  "/:id",
+  UserAuth,
+  authorize(AuthRoles.ADMIN),
+  updateOrderStatus
+);
+
+router.delete(
+  "/:id",
+  UserAuth,
+  authorize(AuthRoles.ADMIN, AuthRoles.USER),
+  deleteOrder
 );
 
 export default router;
