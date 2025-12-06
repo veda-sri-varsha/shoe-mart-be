@@ -6,13 +6,22 @@ import {
   updateProduct,
   deleteProduct,
   productByCollectionId,
+  searchProductsController,
 } from "../controllers/product.controller";
 import UserAuth, { authorize } from "../middlewares/UserAuth";
 import AuthRoles from "../constants/authRoles";
 
 const router: Router = Router();
 
-router.post("/", UserAuth, authorize(AuthRoles.ADMIN, AuthRoles.VENDOR), addProduct);
+router.post(
+  "/",
+  UserAuth,
+  authorize(AuthRoles.ADMIN, AuthRoles.VENDOR),
+  addProduct
+);
+
+router.get("/search", searchProductsController);
+
 router.put(
   "/:id",
   UserAuth,

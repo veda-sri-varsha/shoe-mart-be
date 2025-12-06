@@ -215,3 +215,33 @@ export const deleteProduct = async (
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const searchProductsController = async (req: Request, res: Response) => {
+  const query = (req.query.query as string) || ""; // search term from URL
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  try {
+    const products = await Product.find({
+      name: { $regex: query, $options: "i" },
+      isDeleted: false,
+    })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await Product.countDocuments({
+      name: { $regex: query, $options: "i" },
+      isDeleted: false,
+    });
+
+    res.status(200).json({
+      success: true,
+      products,
+      page,
+      limit,
+      total,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
