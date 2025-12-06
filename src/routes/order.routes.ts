@@ -15,28 +15,28 @@ const router: Router = Router();
 
 router.post(
   "/",
-  UserAuth,
+  // UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
   generateOrder
 );
 
 router.post(
   "/verify-payment",
-  UserAuth,
+  // UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
   verifyPayment
 );
 
 router.post(
   "/razorpay",
-  UserAuth,
+  // UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
   generateRazorPayOrderId
 );
 
 router.get(
   "/",
-  UserAuth,
+  // UserAuth,
   authorize(AuthRoles.ADMIN, AuthRoles.USER),
   getOrders
 );
